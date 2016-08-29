@@ -376,7 +376,29 @@ module.exports = {
    * @param  {Request} req
    */
   parseSort: function ( req ) {
-    return req.param( 'sort' ) || req.options.sort || undefined;
+    var json;
+    try {
+      json = JSON.parse(req.param( 'sort' ));
+    } catch (e) { /* ignore */ }
+    return json || req.param( 'sort' ) || req.options.sort || undefined;
+  },
+
+  /**
+   * Apply one or more sort attributes to the query
+   * 
+   * @param  {Query} query         [waterline query object]
+   * @param  {Request} req
+   */
+  applySort: function ( query, req ) {
+
+    var sort = this.parseSort( req );
+    if (Array.isArray(sort)) {
+      for (var i=0; i < sort.length; ++i) {
+        query.sort(sort[i]);
+      }
+    } else {
+      query.sort( sort );
+    }
   },
 
   /**

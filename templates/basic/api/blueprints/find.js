@@ -53,9 +53,9 @@ module.exports = function findRecords( req, res ) {
   var query = Model.find()
     .where( actionUtil.parseCriteria( req ) )
     .limit( actionUtil.parseLimit( req ) )
-    .skip( actionUtil.parseSkip( req ) )
-    .sort( actionUtil.parseSort( req ) );
+    .skip( actionUtil.parseSkip( req ) );
 
+  actionUtil.applySort( query, req );
   query = actionUtil.populateEach( query, req );
   query.exec( function found( err, matchingRecords ) {
     if ( err ) return res.serverError( err );
