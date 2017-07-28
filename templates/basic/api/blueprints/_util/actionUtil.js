@@ -37,9 +37,10 @@ module.exports = {
    * @param {Array|Object} records A record or an array of records returned from a Waterline query
    * @param {Associations} associations Definition of the associations, from `req.option.associations`
    * @param {Boolean} sideload Sideload embedded records or reduce them to primary keys?
+   * @param {Object} meta (Optional) block to return with the records
    * @return {Object} The returned structure can be consumed by DS.RESTAdapter when passed to res.json()
    */
-  emberizeJSON: function ( model, records, associations, sideload ) {
+  emberizeJSON: function ( model, records, associations, sideload, meta ) {
     sideload = sideload || false;
 
     var plural = Array.isArray( records ) ? true : false;
@@ -112,6 +113,7 @@ module.exports = {
       } );
     }
 
+    json.meta = meta;
     return json;
   },
 
@@ -257,7 +259,7 @@ module.exports = {
 
     // Allow customizable blacklist for params NOT to include as criteria.
     req.options.criteria = req.options.criteria || {};
-    req.options.criteria.blacklist = req.options.criteria.blacklist || [ 'limit', 'skip', 'sort', 'populate' ];
+    req.options.criteria.blacklist = req.options.criteria.blacklist || [ 'limit', 'skip', 'sort', 'populate', 'page' ];
 
     // Validate blacklist to provide a more helpful error msg.
     var blacklist = req.options.criteria && req.options.criteria.blacklist;
@@ -418,7 +420,10 @@ module.exports = {
    */
   parseSkip: function ( req ) {
     var DEFAULT_SKIP = 0;
-    var skip = req.param( 'skip' ) || ( typeof req.options.skip !== 'undefined' ? req.options.skip : DEFAULT_SKIP );
+    var limit = this.parseLimit( req );
+    // Poached customization to calculate `skip` from a `page` parameter for ember-infinity
+    var skipByPage = req.param( 'page' ) ? (parseInt(req.param('page')) - 1) * limit : null;
+    var skip = req.param( 'skip' ) || ( typeof req.options.skip !== 'undefined' ? req.options.skip : skipByPage || DEFAULT_SKIP);
     if ( skip ) {
       skip = +skip;
     }

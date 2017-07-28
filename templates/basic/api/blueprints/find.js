@@ -2,7 +2,8 @@
  * Module dependencies
  */
 var util = require( 'util' ),
-  actionUtil = require( './_util/actionUtil' );
+  actionUtil = require( './_util/actionUtil' ),
+  async = require('async');
 
 /**
  * Enable sideloading. Edit config/blueprints.js and add:
@@ -48,16 +49,28 @@ module.exports = function findRecords( req, res ) {
   // if ( actionUtil.parsePk( req ) ) {
   //  return require( './findone' )( req, res );
   // }
-
+  var limit = actionUtil.parseLimit( req );
   // Lookup for records that match the specified criteria
   var query = Model.find()
     .where( actionUtil.parseCriteria( req ) )
-    .limit( actionUtil.parseLimit( req ) )
+    .limit( limit )
     .skip( actionUtil.parseSkip( req ) );
+
+  var count = Model.count().where( actionUtil.parseCriteria( req ) );
 
   actionUtil.applySort( query, req );
   query = actionUtil.populateEach( query, req );
-  query.exec( function found( err, matchingRecords ) {
+  async.parallel({
+    matchingRecords: (cb) => query.exec(cb),
+    count: (cb) => count.exec(cb)
+  }, (err, result) => {
+
+    var matchingRecords = result.matchingRecords;
+    var meta = {
+      totalPages: Math.ceil( (result.count || 0) / limit),
+      count: result.count
+    }
+
     if ( err ) return res.serverError( err );
 
     // Only `.watch()` for new instances of the model if
@@ -73,6 +86,7 @@ module.exports = function findRecords( req, res ) {
       } );
     }
 
-    res.ok( actionUtil.emberizeJSON( Model, matchingRecords, req.options.associations, performSideload ) );
-  } );
+    res.ok( actionUtil.emberizeJSON( Model, matchingRecords, req.options.associations, performSideload, meta ) );
+
+  });
 };
