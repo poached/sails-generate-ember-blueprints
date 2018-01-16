@@ -83,12 +83,16 @@ module.exports = {
         }
 
         if ( assoc.type === "collection" && record[ assoc.alias ] && record[ assoc.alias ].length > 0 ) {
-          if ( sideload ) json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
-          record[ assoc.alias ] = pluck( record[ assoc.alias ], 'id' );
+          if ( sideload ) {
+            json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
+          }
+          record[ assoc.alias ] = record[ assoc.alias ].map( item => item.id || item );
         }
         if ( assoc.type === "model" && record[ assoc.alias ] ) {
-          if ( sideload ) json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
-          record[ assoc.alias ] = record[ assoc.alias ].id;
+          if ( sideload ) {
+            json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
+          }
+          record[ assoc.alias ] = record[ assoc.alias ].id || record[ assoc.alias ];
         }
       } );
       return record;
@@ -387,7 +391,7 @@ module.exports = {
 
   /**
    * Apply one or more sort attributes to the query
-   * 
+   *
    * @param  {Query} query         [waterline query object]
    * @param  {Request} req
    */
