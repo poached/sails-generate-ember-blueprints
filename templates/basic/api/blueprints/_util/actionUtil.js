@@ -83,13 +83,13 @@ module.exports = {
         }
 
         if ( assoc.type === "collection" && record[ assoc.alias ] && record[ assoc.alias ].length > 0 ) {
-          if ( sideload ) {
+          if ( sideload && typeof record[ assoc.alias ][0] === 'object' ) {
             json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
           }
           record[ assoc.alias ] = record[ assoc.alias ].map( item => item.id || item );
         }
         if ( assoc.type === "model" && record[ assoc.alias ] ) {
-          if ( sideload ) {
+          if ( sideload && typeof record[ assoc.alias ] === 'object' ) {
             json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
           }
           record[ assoc.alias ] = record[ assoc.alias ].id || record[ assoc.alias ];
