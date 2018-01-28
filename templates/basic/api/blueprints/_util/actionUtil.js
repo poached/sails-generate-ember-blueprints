@@ -72,12 +72,15 @@ module.exports = {
     }
 
     var prepareOneRecord = function ( record ) {
+      var links = {};
       // get rid of the record's prototype ( otherwise the .toJSON called in res.send would re-insert embedded records)
       record = create( {}, record.toJSON() );
       forEach( associations, function ( assoc ) {
         var assocName;
         if (assoc.type === 'collection') {
           assocName = pluralize(camelCase(sails.models[assoc.collection].globalId));
+          // Add hyperlink to related collection
+          links[ assocName ] = `/api/v1/${assocName}?${camelCase(model.globalId)}=${record.id}`;
         } else {
           assocName = pluralize(camelCase(sails.models[assoc.model].globalId));
         }
@@ -95,6 +98,9 @@ module.exports = {
           record[ assoc.alias ] = record[ assoc.alias ].id || record[ assoc.alias ];
         }
       } );
+      if (Object.keys(links).length) {
+        record.links = links;
+      }
       return record;
     };
 
