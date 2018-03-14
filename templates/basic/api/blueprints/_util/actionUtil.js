@@ -54,23 +54,6 @@ module.exports = {
 
     json[ documentIdentifier ] = plural ? [] : {};
 
-    if ( sideload ) {
-      // prepare for sideloading
-      forEach( associations, function ( assoc ) {
-        var assocName;
-        if (assoc.type === 'collection') {
-          assocName = pluralize(camelCase(sails.models[assoc.collection].globalId));
-        } else {
-          assocName = pluralize(camelCase(sails.models[assoc.model].globalId));
-        }
-
-        // initialize jsoning object
-        if ( !json.hasOwnProperty( assoc.alias ) ) {
-          json[ assocName ] = [];
-        }
-      } );
-    }
-
     var prepareOneRecord = function ( record ) {
       // get rid of the record's prototype ( otherwise the .toJSON called in res.send would re-insert embedded records)
       record = create( {}, record.toJSON() );
@@ -84,12 +67,20 @@ module.exports = {
 
         if ( assoc.type === "collection" && record[ assoc.alias ] && record[ assoc.alias ].length > 0 ) {
           if ( sideload && typeof record[ assoc.alias ][0] === 'object' ) {
+            // initialize jsoning object
+            if ( !json.hasOwnProperty( assocName ) ) {
+              json[ assocName ] = [];
+            }
             json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
           }
           record[ assoc.alias ] = record[ assoc.alias ].map( item => item.id || item );
         }
         if ( assoc.type === "model" && record[ assoc.alias ] ) {
           if ( sideload && typeof record[ assoc.alias ] === 'object' ) {
+            // initialize jsoning object
+            if ( !json.hasOwnProperty( assocName ) ) {
+              json[ assocName ] = [];
+            }
             json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
           }
           record[ assoc.alias ] = record[ assoc.alias ].id || record[ assoc.alias ];
