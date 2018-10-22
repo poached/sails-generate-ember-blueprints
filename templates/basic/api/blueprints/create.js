@@ -49,7 +49,16 @@ module.exports = function createRecord( req, res ) {
     }
 
     // Do a final query to populate the associations of the record.
-    var Q = Model.findOne( newInstance[ Model.primaryKey ] );
+    let Q;
+    if (Model.getPrimaryKeys && Model.getPrimaryKeys().length > 1) {
+      const where = {};
+      Model.getPrimaryKeys().forEach(key => {
+        where[key] = newInstance[key];
+      });
+      Q = Model.findOne({ where });
+    } else {
+      Q = Model.findOne( newInstance[ Model.primaryKey ] );
+    }
     Q = actionUtil.populateEach( Q, req );
     Q.exec( function foundAgain( err, populatedRecord ) {
       if ( err ) return res.serverError( err );
