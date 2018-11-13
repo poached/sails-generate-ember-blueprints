@@ -103,7 +103,8 @@ module.exports = {
       forEach( json, function ( array, key ) {
         if ( !plural && key === documentIdentifier ) return;
         json[ key ] = uniq( array, function ( record ) {
-          return record.id;
+          // If no id property exists, don't filter out the record
+          return record.id || record;
         } );
       } );
     }
