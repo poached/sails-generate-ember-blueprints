@@ -83,7 +83,7 @@ module.exports = function updateOneRecord( req, res ) {
           Model.subscribe( req, records );
         }
         Model.publishUpdate( pk, cloneDeep( values ), !req.options.mirror && req, {
-          previous: matchingRecord.toJSON()
+          previous: matchingRecord.toJSON(req)
         } );
       }
 
@@ -97,7 +97,7 @@ module.exports = function updateOneRecord( req, res ) {
       Q.exec( function foundAgain( err, populatedRecord ) {
         if ( err ) return res.serverError( err );
         if ( !populatedRecord ) return res.serverError( 'Could not find record after updating!' );
-        res.ok( actionUtil.emberizeJSON( Model, populatedRecord, req.options.associations, performSideload ) );
+        res.ok( actionUtil.emberizeJSON( Model, populatedRecord, req.options.associations, performSideload, req ) );
       } ); // </foundAgain>
     } ); // </updated>
   } ); // </found>

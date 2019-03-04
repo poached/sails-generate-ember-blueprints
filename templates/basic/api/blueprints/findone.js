@@ -46,7 +46,7 @@ module.exports = function findOneRecord( req, res ) {
       actionUtil.subscribeDeep( req, matchingRecord );
     }
 
-    res.ok( actionUtil.emberizeJSON( Model, matchingRecord, req.options.associations, performSideload ) );
+    res.ok( actionUtil.emberizeJSON( Model, matchingRecord, req.options.associations, performSideload, req ) );
   } );
 
 };

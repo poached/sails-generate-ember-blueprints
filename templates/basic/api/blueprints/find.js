@@ -86,7 +86,7 @@ module.exports = function findRecords( req, res ) {
       } );
     }
 
-    res.ok( actionUtil.emberizeJSON( Model, matchingRecords, req.options.associations, performSideload, meta ) );
+    res.ok( actionUtil.emberizeJSON( Model, matchingRecords, req.options.associations, performSideload, req, meta ) );
 
   });
 };

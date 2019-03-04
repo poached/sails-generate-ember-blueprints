@@ -37,10 +37,11 @@ module.exports = {
    * @param {Array|Object} records A record or an array of records returned from a Waterline query
    * @param {Associations} associations Definition of the associations, from `req.option.associations`
    * @param {Boolean} sideload Sideload embedded records or reduce them to primary keys?
+   * @param {Object} req The request object
    * @param {Object} meta (Optional) block to return with the records
    * @return {Object} The returned structure can be consumed by DS.RESTAdapter when passed to res.json()
    */
-  emberizeJSON: function ( model, records, associations, sideload, meta ) {
+  emberizeJSON: function ( model, records, associations, sideload, req, meta ) {
     sideload = sideload || false;
 
     var plural = Array.isArray( records ) ? true : false;
@@ -56,7 +57,7 @@ module.exports = {
 
     var prepareOneRecord = function ( record ) {
       // get rid of the record's prototype ( otherwise the .toJSON called in res.send would re-insert embedded records)
-      record = create( {}, record.toJSON() );
+      record = create( {}, record.toJSON(req) );
       forEach( associations, function ( assoc ) {
         var assocName;
         if (assoc.type === 'collection') {
